@@ -1,7 +1,7 @@
 from vllm import LLM, SamplingParams
 from huggingface_hub import snapshot_download
 from pathlib import Path
-import time
+
 class InferlessPythonModel:
     def initialize(self):
         repo_id = "mistralai/Mistral-7B-v0.1"  # Specify the model repository ID
@@ -29,14 +29,12 @@ class InferlessPythonModel:
         
     def infer(self,inputs):
         prompts = inputs["prompt"]  # Extract the prompt from the input
-        init_time = time.perf_counter()
         result = self.llm.generate(prompts, self.sampling_params)
-        end_time = time.perf_counter() - init_time
         # Extract the generated text from the result
         result_output = [output.outputs[0].text for output in result]
 
         # Return a dictionary containing the result
-        return {'end_time':end_time,'result': result_output[0]}
+        return {'result': result_output[0]}
 
     def finalize(self):
         pass
