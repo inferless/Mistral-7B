@@ -1,5 +1,8 @@
 # Mistral
 This template can be used to import Mistral-7B-v0.1 which is a text generation model.
+## Deploy Mistral-7B using Inferless:
+- Deployment of Mistral-7B model using [vLLM](https://github.com/vllm-project/vllm).
+- By using the vLLM, you can expect an average latency of 1.50 sec.
 
 ---
 ## Prerequisites
