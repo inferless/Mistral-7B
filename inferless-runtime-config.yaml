@@ -4,4 +4,4 @@ build:
     - "libssl-dev"
   python_packages:
     - "torch==2.1.2"
-    - "transformers==4.37.2"
+    - "vllm==0.3.2"
