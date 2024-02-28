@@ -1,25 +1,42 @@
-import json
-import numpy as np
-import torch
-from transformers import pipeline
-
-
+from vllm import LLM, SamplingParams
+from huggingface_hub import snapshot_download
+from pathlib import Path
+import time
 class InferlessPythonModel:
-
-    # Implement the Load function here for the model
     def initialize(self):
-        self.generator = pipeline("text-generation", model="mistralai/Mistral-7B-v0.1",device=0)
-        print("This is Initialize Function", flush=True)
+        repo_id = "mistralai/Mistral-7B-v0.1"  # Specify the model repository ID
+        # HF_TOKEN = os.getenv("HF_TOKEN")  # Access Hugging Face token from environment variable
+        volume_nfs = "/var/nfs-mount/common_llm"  # Define model storage location
+        model_dir = f"{volume_nfs}/{repo_id}"  # Construct model directory path
+        model_dir_path = Path(model_dir)  # Convert path to Path object
 
-    
-    # Function to perform inference 
-    def infer(self, inputs):
-        prompt = inputs["prompt"]
-        pipeline_output = self.generator(prompt, do_sample=True, min_length=20)
-        generated_txt = pipeline_output[0]["generated_text"]
+        # Create the model directory if it doesn't exist
+        if not model_dir_path.exists():
+            model_dir_path.mkdir(exist_ok=True, parents=True)
 
-        return {"generated_text": generated_txt}
+        # Download the model snapshot from Hugging Face Hub
+        snapshot_download(
+            repo_id,
+            local_dir=model_dir
+            # token=HF_TOKEN  # Provide token if necessary
+        )
 
-    # perform any cleanup activity here
-    def finalize(self,args):
-        self.pipe = None
+        # Define sampling parameters for model generation
+        self.sampling_params = SamplingParams(temperature=0.7, top_p=0.95, max_tokens=128)
+
+        # Initialize the LLM object
+        self.llm = LLM(model=model_dir)
+        
+    def infer(self,inputs):
+        prompts = inputs["prompt"]  # Extract the prompt from the input
+        init_time = time.perf_counter()
+        result = self.llm.generate(prompts, self.sampling_params)
+        end_time = time.perf_counter() - init_time
+        # Extract the generated text from the result
+        result_output = [output.outputs[0].text for output in result]
+
+        # Return a dictionary containing the result
+        return {'end_time':end_time,'result': result_output[0]}
+
+    def finalize(self):
+        pass
