@@ -4,28 +4,11 @@ from pathlib import Path
 
 class InferlessPythonModel:
     def initialize(self):
-        repo_id = "mistralai/Mistral-7B-v0.1"  # Specify the model repository ID
-        # HF_TOKEN = os.getenv("HF_TOKEN")  # Access Hugging Face token from environment variable
-        volume_nfs = "/var/nfs-mount/common_llm"  # Define model storage location
-        model_dir = f"{volume_nfs}/{repo_id}"  # Construct model directory path
-        model_dir_path = Path(model_dir)  # Convert path to Path object
-
-        # Create the model directory if it doesn't exist
-        if not model_dir_path.exists():
-            model_dir_path.mkdir(exist_ok=True, parents=True)
-
-        # Download the model snapshot from Hugging Face Hub
-        snapshot_download(
-            repo_id,
-            local_dir=model_dir
-            # token=HF_TOKEN  # Provide token if necessary
-        )
-
+        model_id = "mistralai/Mistral-7B-v0.1"  # Specify the model repository ID
         # Define sampling parameters for model generation
         self.sampling_params = SamplingParams(temperature=0.7, top_p=0.95, max_tokens=128)
-
         # Initialize the LLM object
-        self.llm = LLM(model=model_dir)
+        self.llm = LLM(model=model_id)
         
     def infer(self,inputs):
         prompts = inputs["prompt"]  # Extract the prompt from the input
